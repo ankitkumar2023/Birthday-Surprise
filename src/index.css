@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+/* Pastel palette: blush pinks, warm purples, gold — on a deep plum night sky. */
+/* Slim, tinted scrollbars instead of the bright default ones. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 168 197 / 0.35) transparent;
+}
+
+@theme {
+  --color-blush-100: #ffe4ec;
+  --color-blush-200: #ffc9d9;
+  --color-blush-300: #ffa8c5;
+  --color-blush-400: #ff85ad;
+  --color-lilac-200: #e9d5ff;
+  --color-lilac-300: #d8b4fe;
+  --color-lilac-400: #c084fc;
+  --color-lilac-500: #a26cf0;
+  --color-gold-200: #fef3c7;
+  --color-gold-300: #fde68a;
+  --color-gold-400: #f7d070;
+  --color-plum-800: #2a1838;
+  --color-plum-900: #1b0f24;
+  --color-plum-950: #120a19;
+
+  --font-script: "Dancing Script", cursive;
+  --font-body: "Quicksand", ui-sans-serif, system-ui, sans-serif;
+}
+
+@utility text-glow {
+  text-shadow:
+    0 0 12px rgb(255 168 197 / 0.7),
+    0 0 32px rgb(192 132 252 / 0.45);
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+html {
+  background: var(--color-plum-950);
+}
+
+body {
+  margin: 0;
+  background: var(--color-plum-950);
+  color: var(--color-blush-100);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
