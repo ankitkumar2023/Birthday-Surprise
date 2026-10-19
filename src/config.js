@@ -199,10 +199,7 @@ export const MEMORY_VAULT = {
           ],
         },
       ],
-      shayari: `Kuch log trend follow karte hain,
-kuch log khud trend ban jaate hain...
-Aur kuch, tumhari tarah,
-classic hote hain — kabhi out of style nahi hote. ✨`,
+      shayari: "",
     },
     {
       icon: "🍨",
