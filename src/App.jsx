@@ -17,6 +17,8 @@ const PHASES = {
 
 export default function App() {
   const [currentPhase, setCurrentPhase] = useState(PHASES.LANDING);
+  // Everything she gives along the way, for the trip-recap email at the end.
+  const [player, setPlayer] = useState({ email: "", game: null, vault: {} });
 
   // Each phase starts at the top of the page.
   useEffect(() => {
@@ -32,16 +34,35 @@ export default function App() {
         {/* mode="wait" lets the old phase finish its exit before the next one enters. */}
         <AnimatePresence mode="wait">
           {currentPhase === PHASES.LANDING && (
-            <Landing key={PHASES.LANDING} onStart={() => setCurrentPhase(PHASES.GAME)} />
+            <Landing
+              key={PHASES.LANDING}
+              initialEmail={player.email}
+              onStart={(email) => {
+                setPlayer({ email, game: null, vault: {} });
+                setCurrentPhase(PHASES.GAME);
+              }}
+            />
           )}
           {currentPhase === PHASES.GAME && (
-            <GamePhase key={PHASES.GAME} onWin={() => setCurrentPhase(PHASES.VAULT)} />
+            <GamePhase
+              key={PHASES.GAME}
+              onWin={(game) => {
+                setPlayer((p) => ({ ...p, game }));
+                setCurrentPhase(PHASES.VAULT);
+              }}
+            />
           )}
           {currentPhase === PHASES.VAULT && (
-            <MemoryVault key={PHASES.VAULT} onNext={() => setCurrentPhase(PHASES.FINALE)} />
+            <MemoryVault
+              key={PHASES.VAULT}
+              onNext={(vault) => {
+                setPlayer((p) => ({ ...p, vault }));
+                setCurrentPhase(PHASES.FINALE);
+              }}
+            />
           )}
           {currentPhase === PHASES.FINALE && (
-            <Finale key={PHASES.FINALE} onRestart={() => setCurrentPhase(PHASES.LANDING)} />
+            <Finale key={PHASES.FINALE} player={player} onRestart={() => setCurrentPhase(PHASES.LANDING)} />
           )}
         </AnimatePresence>
       </main>

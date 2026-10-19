@@ -2,29 +2,41 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Confetti from "react-confetti";
-import { RotateCcw, Volume2, VolumeX } from "lucide-react";
+import { Loader2, MailCheck, RefreshCw, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import PhaseTransition from "../components/PhaseTransition";
 import Typewriter from "../components/Typewriter";
 import Cake from "../finale/Cake";
 import useWindowSize from "../hooks/useWindowSize";
-import { BIRTHDAY_MESSAGE, BIRTHDAY_SONG_SRC, HER_NAME, LETTER_SIGNATURE } from "../config";
+import { sendBirthdayEmail } from "../email";
+import { BIRTHDAY_MESSAGE, BIRTHDAY_SONG_SRC, EMAIL_SENT_LINE, HER_NAME, LETTER_SIGNATURE } from "../config";
 
 const CONFETTI_COLORS = ["#ffa8c5", "#ff85ad", "#d8b4fe", "#c084fc", "#fde68a", "#f7d070", "#ffffff"];
 const CONFETTI_SECONDS = 8;
 
 // Phase 4 — tapping the candle blows it out, starts the song, fires
-// confetti and types out the birthday message.
-export default function Finale({ onRestart }) {
+// confetti and types out the birthday message. Meanwhile her birthday
+// trip-recap email is sent, and once the letter is done she's asked to check it.
+export default function Finale({ player, onRestart }) {
   const [blown, setBlown] = useState(false);
   const [confettiFlowing, setConfettiFlowing] = useState(true);
   const [muted, setMuted] = useState(false);
   const [messageDone, setMessageDone] = useState(false);
+  const [mail, setMail] = useState("idle"); // idle → sending → sent | failed
   const audioRef = useRef(null);
   const { width, height } = useWindowSize();
+
+  const sendEmail = () => {
+    if (!player?.email) return;
+    setMail("sending");
+    sendBirthdayEmail(player)
+      .then(() => setMail("sent"))
+      .catch(() => setMail("failed"));
+  };
 
   const blowOut = () => {
     if (blown) return;
     setBlown(true);
+    sendEmail(); // starts now so it's already in her inbox when the letter ends
     // Playing inside the tap handler counts as a user gesture, so browsers allow it.
     const audio = audioRef.current;
     if (audio) {
@@ -128,6 +140,45 @@ export default function Finale({ onRestart }) {
               </motion.p>
             )}
           </AnimatePresence>
+        </motion.div>
+      )}
+
+      {/* "Check your email" — the last surprise */}
+      {messageDone && mail !== "idle" && (
+        <motion.div
+          className="w-full max-w-xl rounded-3xl border border-gold-300/40 bg-gold-300/10 px-6 py-5 text-center shadow-[0_0_50px_rgba(247,208,112,0.18)] backdrop-blur-md"
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ delay: 0.6, type: "spring", stiffness: 160, damping: 16 }}
+          role="status"
+        >
+          {mail === "failed" ? (
+            <>
+              <p className="text-blush-100">Email abhi nahi ja paaya 😕</p>
+              <button
+                type="button"
+                onClick={sendEmail}
+                className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-full bg-white/10 px-5 py-2 text-sm font-semibold text-gold-200 transition hover:bg-white/20"
+              >
+                <RefreshCw className="size-4" /> Phir se bhejo
+              </button>
+            </>
+          ) : (
+            <>
+              <motion.div
+                className="mx-auto mb-3 flex size-14 items-center justify-center rounded-full bg-gold-300/20 text-gold-200"
+                animate={mail === "sent" ? { scale: [1, 1.15, 1] } : {}}
+                transition={{ duration: 1.6, repeat: Infinity }}
+              >
+                {mail === "sent" ? <MailCheck className="size-7" /> : <Loader2 className="size-7 animate-spin" />}
+              </motion.div>
+              <p className="font-script text-3xl text-gold-200">{mail === "sent" ? "Next stop: your inbox ✈️" : "Ek letter ud raha hai… ✈️"}</p>
+              <p className="mt-2 text-blush-100/90">
+                {mail === "sent" ? EMAIL_SENT_LINE : "Tumhare inbox ki taraf ja raha hai, bas ek second…"}
+              </p>
+              <p className="mt-1 text-sm text-lilac-200/70">{player.email}</p>
+            </>
+          )}
         </motion.div>
       )}
 

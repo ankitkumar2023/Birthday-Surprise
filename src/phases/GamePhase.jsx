@@ -17,7 +17,7 @@ const GOAL = IS_TRIVIA ? Math.min(SECTIONS, TRIVIA_QUESTIONS.length) : SECTIONS;
 const PASS = { ...BOARDING_PASS, sections: BOARDING_PASS.sections.slice(0, GOAL) };
 const QUESTIONS = TRIVIA_QUESTIONS.slice(0, GOAL);
 
-const CHEERS = ["Gotcha! 💖", "Ooh, nice one ✨", "You're good at this 😌", "One step closer… 🔓"];
+const CHEERS = ["Gotcha! ⚡", "Ooh, nice one ✨", "You're good at this 😌", "One step closer… 🔓"];
 
 // Phase 2 — owns the score. Whichever game is active just reports each
 // success via onSuccess(x, y); this component celebrates it, unlocks a
@@ -27,7 +27,12 @@ export default function GamePhase({ onWin }) {
   const [bursts, setBursts] = useState([]);
   const [cheer, setCheer] = useState("");
   const burstId = useRef(0);
+  const startedAt = useRef(Date.now());
+  const wonAt = useRef(null);
   const won = unlocked >= GOAL;
+  if (won && wonAt.current === null) wonAt.current = Date.now();
+
+  const board = () => onWin({ mode: GAME_MODE, wins: GOAL, seconds: Math.round((wonAt.current - startedAt.current) / 1000) });
 
   const handleSuccess = useCallback((x, y) => {
     setUnlocked((n) => Math.min(n + 1, GOAL));
@@ -108,7 +113,7 @@ export default function GamePhase({ onWin }) {
       {/* The way forward, once every fragment is unlocked */}
       <div className="mt-8 flex min-h-16 justify-center">
         {won && (
-          <GlowButton onClick={onWin} delay={1.2}>
+          <GlowButton onClick={board} delay={1.2}>
             <Unlock className="size-5" /> Board to the Memory Vault
           </GlowButton>
         )}

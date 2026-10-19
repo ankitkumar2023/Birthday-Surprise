@@ -15,7 +15,7 @@ import { playSound } from "./sounds";
 //   chat.prompt    → the step she's answering now (null while you're typing)
 //   chat.answer(reply) → send her reply; returns true if it was the last one
 //   chat.done      → every step answered
-//   chat.answers   → [{ question, answer }] for everything she replied
+//   chat.answers   → [{ type, question, answer, pushback }] for everything she replied
 
 const asLines = (question) => (Array.isArray(question) ? question : [question]).filter(Boolean);
 
@@ -73,7 +73,12 @@ export default function useConversation(steps) {
     if (!step) return false;
     setPrompt(null);
     push("her", { text: reply.text, swatch: reply.swatch });
-    answers.current.push({ question: asLines(step.question).join(" "), answer: reply.value ?? reply.text });
+    answers.current.push({
+      type: step.type,
+      question: asLines(step.question).join(" "),
+      answer: reply.value ?? reply.text,
+      pushback: Boolean(reply.option?.pushback), // she picked the playful "No"
+    });
 
     // An answer that isn't allowed (e.g. "good friend"): tease and ask again.
     const blocked = step.notAllowed;

@@ -52,7 +52,15 @@ The UI sounds are optional: until a file exists, a soft built-in chime plays ins
 
 Each card in `MEMORY_VAULT.cards` has a list of `steps`. The comment above `MEMORY_VAULT` explains every step type (`choice`, `text`, `colors`, `select`, `rating`) and the playful "No" `pushback`.
 
-Her replies are not saved or sent anywhere. While testing you can see them in the browser console with `window.vaultAnswers`.
+While testing you can see her replies in the browser console with `window.vaultAnswers`.
+
+### The trip-recap email
+
+The landing page asks for her email. When she blows out the candle, the server emails her a trip recap: a boarding pass, one numbered stop per memory card built from her answers, and the letter. When the letter finishes, she's asked to check her inbox. A BCC copy goes to `EMAIL_COPY_TO`.
+
+- The template is in [server/emailTemplate.js](server/emailTemplate.js), and sending is in [server/sendBirthdayEmail.js](server/sendBirthdayEmail.js).
+- Gmail credentials go in `.env` (see `.env.example`). The file is gitignored and only the server reads it.
+- `npm run dev` / `npm run preview` serve the endpoint. On Vercel, [api/send-birthday-email.js](api/send-birthday-email.js) serves it; add the same three variables under Project → Settings → Environment Variables. A plain static host such as Netlify drop can't send email.
 
 ## Project layout
 

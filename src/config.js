@@ -18,6 +18,12 @@ export const YOUR_NAME = "Ankit";
 export const LANDING_LINE_1 = "I made something for you...";
 export const LANDING_LINE_2 = "but you have to earn it.";
 
+// Asked before the game starts. At the end she gets a "trip recap"
+// email with everything she picked along the way (see server/emailTemplate.js).
+export const EMAIL_PROMPT = "Boarding se pehle apna email daal do… iska kaam end mein samajh aayega ✨";
+export const EMAIL_PLACEHOLDER = "tumhara@gmail.com";
+export const EMAIL_INVALID = "Hmm, ye email sahi nahi lag raha 🤔";
+
 /* ───────────────────────── Phase 2: the game ──────────────────────── */
 
 // Pick the mini-game:
@@ -42,7 +48,7 @@ export const BOARDING_PASS = {
     { fields: [{ label: "From", value: "Ek aur saal" }, { label: "To", value: "Birthday Mode 🎂" }] },
     { fields: [{ label: "Seat", value: "1A · Window, obviously" }, { label: "Perks", value: "Unlimited cake · Zero adulting" }] },
   ],
-  footnote: "Is flight pe sirf ek seat thi... aur wo tumhare liye reserved thi. ✈️",
+  footnote: "Turbulence: zero. Mood: elevated. Destination: ek shaandaar saal. ✈️",
 };
 
 // Used only when GAME_MODE = "trivia". One question per fragment.
@@ -122,7 +128,7 @@ export const TRIVIA_QUESTIONS = [
 //
 // `question` can be a string or a list of strings (sent as separate chat bubbles).
 export const MEMORY_VAULT = {
-  title: "Kuch Baatein, Sirf Tumhare Liye",
+  title: "Chhoti Baatein, Badi Yaadein",
   subtitle: "Har card ek chhoti si baatcheet hai… aur har baat ke peeche kuch chhupa hai. ✨",
   progressLabel: "Memory Progress",
   allDoneBanner: "All memories unlocked",
@@ -143,6 +149,7 @@ export const MEMORY_VAULT = {
       steps: [
         {
           type: "choice",
+          emailLabel: "Raipur visit · Verdict", // heading for this answer in her email
           question: "Toh mujhe Raipur bula rahi ho na? 😊",
           options: [
             { label: "❤️ Yes" },
@@ -192,11 +199,10 @@ export const MEMORY_VAULT = {
           ],
         },
       ],
-      shayari: `Wo muskurahat bhi kamaal karti hai,
-Wo palkein bhi sawaal karti hain,
-Aur jab tum saree mein nazar aati ho,
-Dil se sirf ek hi awaaz aati hai...
-"Bas... isi nazare ko thoda aur dekh loon."`,
+      shayari: `Kuch log trend follow karte hain,
+kuch log khud trend ban jaate hain...
+Aur kuch, tumhari tarah,
+classic hote hain — kabhi out of style nahi hote. ✨`,
     },
     {
       icon: "🍨",
@@ -236,7 +242,7 @@ Dil se sirf ek hi awaaz aati hai...
           result: [
             "Order ready 🍨",
             "{flavors} scoops, upar se {toppings}, aur {sauce} ki drizzle.",
-            "Menu pe iska naam hoga 'The Khushi Special'. Sirf birthday girl ke liye available 👑",
+            "Menu pe iska naam hoga 'The Khushi Special'. Limited edition, birthday pe hi milta hai 👑",
           ],
           specialLine: "Aur nuts toh hone hi the... itna toh jaanta hoon tumhe 😌🥜",
           noSpecialLine: "Ek bhi nut nahi?? Ye kaun hai aur Khushi kahan hai? 😄",
@@ -290,7 +296,7 @@ Dil se sirf ek hi awaaz aati hai...
           prizes: [
             { emoji: "🍫", label: "Ek chocolate, bina maange" },
             { emoji: "☕", label: "Ek treat, cafe tumhari choice" },
-            { emoji: "🎧", label: "Ek playlist, sirf tumhare mood ke liye" },
+            { emoji: "🎧", label: "Ek playlist, tumhare mood ke hisaab se" },
             { emoji: "🗣️", label: "1 ghanta rant session, zero advice" },
             { emoji: "🏆", label: "Ek argument jeetne ka pass" },
             { emoji: "✍️", label: "Ek shayari, on demand" },
@@ -304,7 +310,7 @@ Dil se sirf ek hi awaaz aati hai...
       message: `Thank you for playing along. 😊
 
 Bas ek aakhri cheez baaki hai...
-ek chhota sa cake, aur ek letter — sirf tumhare liye. ✨`,
+ek chhota sa cake, aur ek letter. ✨`,
     },
   ],
 
@@ -342,35 +348,17 @@ export const BIRTHDAY_SONG_SRC = "/assets/happy-birthday.mp3";
 // Typed out letter by letter after she blows out the candle, under the
 // "Happy Birthday, Khushi!" heading. Line breaks are kept; the typewriter
 // pauses briefly at punctuation.
-export const BIRTHDAY_MESSAGE = `I honestly don't know for how long I'll get to be a part of your journey...
-Maybe for a few days,
-maybe for a few years,
-or maybe life has its own plans.
+export const BIRTHDAY_MESSAGE = `Happy Birthday, Khushi ✨
+You are like sunlight that brightens everything quietly, without ever asking for attention.
+Your innocence is your real beauty, and your own color shines differently — and beautifully — from every other hue.
 
-But jitna bhi hoga...
-I genuinely hope that whenever you remember me, it's with a smile, and you think,
-"Haan... ye ladka thoda alag tha." 😊
+Always keep cheering the innocent girl inside you,
+that gentle simplicity that makes you, you.
+Aur yaad rakhna — no matter how life moves, everything finds its place in time.
+May all your wishes come true, aur may this year bring you peace, joy, and everything your heart is quietly waiting for.`;
 
-I hope that in every possible universe, you keep smiling just the way you do today.
-Because your smile has a strange way of making everything around it feel a little brighter.
-
-Aur tumhare naam ki tarah...
-khushi hamesha tumhari zindagi ka hissa bani rahe.
-
-Bas aise hi rehna —
-thodi si bholi,
-bahut saari innocent,
-aur bilkul apni asli wali Khushi.
-
-Please don't ever lose that innocence.
-The world already has enough people pretending to be someone else;
-your simplicity is what makes you special.
-
-Thank you for taking the time to experience this little surprise.
-Maybe it won't be the biggest birthday gift you get today...
-but I truly hope it becomes one of the most memorable ones.
-
-Wishing you the happiest birthday, Khushi. ❤️`;
+// Shown under the letter once the trip-recap email is on its way.
+export const EMAIL_SENT_LINE = "Apna inbox check karo — game ka recap aur tumhara coupon wahan pahunch gaya hai.";
 
 // Signed under the letter once it finishes typing.
 export const LETTER_SIGNATURE = `— ${YOUR_NAME} ✨`;

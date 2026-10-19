@@ -122,7 +122,7 @@ export default function MemoryVault({ onNext }) {
     return () => timers.forEach(clearTimeout);
   }, [allUnlocked]);
 
-  // Her replies stay in this browser only. Handy while testing:
+  // Her replies are emailed to her at the end of the finale. Handy while testing:
   // open the browser console and type  window.vaultAnswers
   useEffect(() => {
     window.vaultAnswers = answers;
@@ -130,7 +130,7 @@ export default function MemoryVault({ onNext }) {
 
   const continueToFinale = () => {
     playSound("click");
-    onNext();
+    onNext(answers); // goes into her trip-recap email
   };
 
   return (
