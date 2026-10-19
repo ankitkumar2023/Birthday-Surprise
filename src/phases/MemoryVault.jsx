@@ -31,10 +31,15 @@ const CONFETTI_SECONDS = 7;
 //   4. Finished cards re-open in a cinematic viewer.
 //   5. When all are done, the vault glows, confetti falls, and a big button
 //      leads to the finale.
+// Testing shortcut (dev server only): /?card=3 jumps straight into memory 3,
+// with the cards before it already unlocked.
+const TEST_CARD = import.meta.env.DEV ? Number(new URLSearchParams(window.location.search).get("card")) - 1 : -1;
+const testing = TEST_CARD >= 0 && TEST_CARD < CARDS.length;
+
 export default function MemoryVault({ onNext }) {
-  const [introDone, setIntroDone] = useState(false);
-  const [unlocked, setUnlocked] = useState([]); // indexes of finished cards
-  const [talking, setTalking] = useState(null); // index whose conversation is open
+  const [introDone, setIntroDone] = useState(testing);
+  const [unlocked, setUnlocked] = useState(() => (testing ? CARDS.slice(0, TEST_CARD).map((_, i) => i) : [])); // indexes of finished cards
+  const [talking, setTalking] = useState(testing ? TEST_CARD : null); // index whose conversation is open
   const [viewing, setViewing] = useState(null); // index open in the viewer
   const [watching, setWatching] = useState(null); // video index open in the video viewer
   const [videosOpened, setVideosOpened] = useState([]); // bonus videos she has unlocked
