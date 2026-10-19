@@ -205,7 +205,9 @@ export const MEMORY_VAULT = {
       icon: "🍨",
       title: "Sundae Studio",
       photo: "/assets/memory3-khushi-face.jpeg",
-      audio: "/assets/audio/memory3.mp3",
+      // "Sochta Hoon Ki Main Kya Pukaru Tumhe" — plays only when this photo is revealed.
+      audio: "/assets/audio/sochta-hu-ki-main-kya-pukaru-tumhe.mp3",
+      audioSettings: { volume: 0.4, fadeIn: 1.8, maxLength: null, startAt: 0 },
       steps: [
         {
           type: "sundae",
