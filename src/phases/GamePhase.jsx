@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Heart, Unlock } from "lucide-react";
 import PhaseTransition from "../components/PhaseTransition";
@@ -7,7 +7,8 @@ import Burst from "../components/Burst";
 import CatchGame from "../game/CatchGame";
 import TriviaGame from "../game/TriviaGame";
 import BoardingPass from "../game/BoardingPass";
-import { BOARDING_PASS, GAME_MODE, TRIVIA_QUESTIONS } from "../config";
+import AddressPrompt from "../game/AddressPrompt";
+import { ADDRESS_STEPS, BOARDING_PASS, GAME_MODE, TRIVIA_QUESTIONS } from "../config";
 
 const IS_TRIVIA = GAME_MODE === "trivia";
 
@@ -32,14 +33,43 @@ export default function GamePhase({ onWin }) {
   const won = unlocked >= GOAL;
   if (won && wonAt.current === null) wonAt.current = Date.now();
 
-  const board = () => onWin({ mode: GAME_MODE, wins: GOAL, seconds: Math.round((wonAt.current - startedAt.current) / 1000) });
+  // Her address, asked one piece per catch: { address, pincode, landmark }.
+  const [answers, setAnswers] = useState({});
+  const [asking, setAsking] = useState(null); // the ADDRESS_STEPS entry on screen
+  const [pending, setPending] = useState(false); // caught, question about to show: game paused
 
-  const handleSuccess = useCallback((x, y) => {
-    setUnlocked((n) => Math.min(n + 1, GOAL));
+  const board = () =>
+    onWin({ mode: GAME_MODE, wins: GOAL, seconds: Math.round((wonAt.current - startedAt.current) / 1000), address: answers });
+
+  const handleSuccess = (x, y) => {
+    if (pending) return;
     setCheer(CHEERS[Math.floor(Math.random() * CHEERS.length)]);
     const id = burstId.current++;
     setBursts((list) => [...list, { id, x, y }]);
-  }, []);
+    // This catch has a question: the pass prints once she's answered it.
+    const step = ADDRESS_STEPS[unlocked];
+    if (step) {
+      setPending(true);
+      setTimeout(() => setAsking(step), 450); // let the sparkle burst play first
+    }
+    else setUnlocked((n) => Math.min(n + 1, GOAL));
+  };
+
+  const answer = (value) => {
+    setAnswers((all) => ({ ...all, [asking.key]: value }));
+    setAsking(null);
+    setPending(false);
+    setUnlocked((n) => Math.min(n + 1, GOAL));
+  };
+
+  // Fill the pass with what she typed, plus the complete address at the end.
+  const pass = {
+    ...PASS,
+    sections: PASS.sections.map((section) => ({
+      fields: section.fields.map((f) => (f.answer ? { ...f, value: answers[f.answer] ?? "" } : f)),
+    })),
+    fullAddress: [answers.address, answers.landmark, answers.pincode && `PIN ${answers.pincode}`].filter(Boolean).join(" · "),
+  };
 
   const removeBurst = (id) => setBursts((list) => list.filter((b) => b.id !== id));
 
@@ -103,12 +133,13 @@ export default function GamePhase({ onWin }) {
 
       {/* The game itself */}
       {IS_TRIVIA ? (
-        <TriviaGame questions={QUESTIONS} onCorrect={handleSuccess} done={won} />
+        <TriviaGame questions={QUESTIONS} onCorrect={handleSuccess} done={won || pending} />
       ) : (
-        <CatchGame onCatch={handleSuccess} done={won} />
+        <CatchGame onCatch={handleSuccess} done={won || pending} />
       )}
 
-      <BoardingPass pass={PASS} unlocked={unlocked} />
+      <BoardingPass pass={pass} unlocked={unlocked} />
+      <AddressPrompt step={asking} number={unlocked + 1} total={Math.min(ADDRESS_STEPS.length, GOAL)} onAnswer={answer} />
 
       {/* The way forward, once every fragment is unlocked */}
       <div className="mt-8 flex min-h-16 justify-center">

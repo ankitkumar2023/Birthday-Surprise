@@ -2,26 +2,30 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Confetti from "react-confetti";
-import { Loader2, MailCheck, RefreshCw, RotateCcw, Volume2, VolumeX } from "lucide-react";
+import { Clapperboard, Loader2, MailCheck, RefreshCw, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import PhaseTransition from "../components/PhaseTransition";
 import Typewriter from "../components/Typewriter";
 import Cake from "../finale/Cake";
+import MessageVideo from "../finale/MessageVideo";
 import useWindowSize from "../hooks/useWindowSize";
 import { sendBirthdayEmail } from "../email";
-import { BIRTHDAY_MESSAGE, BIRTHDAY_SONG_SRC, EMAIL_SENT_LINE, HER_NAME, LETTER_SIGNATURE } from "../config";
+import { BIRTHDAY_MESSAGE, BIRTHDAY_SONG_SRC, EMAIL_SENT_LINE, FINALE_VIDEO, HER_NAME, LETTER_SIGNATURE } from "../config";
 
 const CONFETTI_COLORS = ["#ffa8c5", "#ff85ad", "#d8b4fe", "#c084fc", "#fde68a", "#f7d070", "#ffffff"];
 const CONFETTI_SECONDS = 8;
 
 // Phase 4 — tapping the candle blows it out, starts the song, fires
 // confetti and types out the birthday message. Meanwhile her birthday
-// trip-recap email is sent, and once the letter is done she's asked to check it.
+// trip-recap email is sent. When the letter is done, a countdown leads into
+// your video message, and after it she's asked to check her inbox.
 export default function Finale({ player, onRestart }) {
   const [blown, setBlown] = useState(false);
   const [confettiFlowing, setConfettiFlowing] = useState(true);
   const [muted, setMuted] = useState(false);
   const [messageDone, setMessageDone] = useState(false);
   const [mail, setMail] = useState("idle"); // idle → sending → sent | failed
+  const [video, setVideo] = useState(FINALE_VIDEO ? "waiting" : "done"); // waiting → open → done
+  const afterVideo = messageDone && video === "done";
   const audioRef = useRef(null);
   const { width, height } = useWindowSize();
 
@@ -51,6 +55,13 @@ export default function Finale({ player, onRestart }) {
     const timer = setTimeout(() => setConfettiFlowing(false), CONFETTI_SECONDS * 1000);
     return () => clearTimeout(timer);
   }, [blown]);
+
+  // Letter finished: a moment for the signature, then the countdown + video.
+  useEffect(() => {
+    if (!messageDone || video !== "waiting") return;
+    const timer = setTimeout(() => setVideo("open"), 1500);
+    return () => clearTimeout(timer);
+  }, [messageDone, video]);
 
   // A detached <audio> can keep playing, so stop the song when leaving this phase.
   useEffect(() => {
@@ -144,7 +155,7 @@ export default function Finale({ player, onRestart }) {
       )}
 
       {/* "Check your email" — the last surprise */}
-      {messageDone && mail !== "idle" && (
+      {afterVideo && mail !== "idle" && (
         <motion.div
           className="w-full max-w-xl rounded-3xl border border-gold-300/40 bg-gold-300/10 px-6 py-5 text-center shadow-[0_0_50px_rgba(247,208,112,0.18)] backdrop-blur-md"
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -182,7 +193,20 @@ export default function Finale({ player, onRestart }) {
         </motion.div>
       )}
 
-      {messageDone && (
+      {afterVideo && FINALE_VIDEO && (
+        <motion.button
+          type="button"
+          onClick={() => setVideo("open")}
+          className="flex cursor-pointer items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-blush-100 transition hover:bg-white/15"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+        >
+          <Clapperboard className="size-4" /> {FINALE_VIDEO.replayLabel}
+        </motion.button>
+      )}
+
+      {afterVideo && (
         <motion.button
           type="button"
           onClick={onRestart}
@@ -194,6 +218,12 @@ export default function Finale({ player, onRestart }) {
           <RotateCcw className="size-4" /> Relive it from the start
         </motion.button>
       )}
+
+      <MessageVideo
+        open={video === "open"}
+        onStart={() => audioRef.current?.pause()} // the song steps aside for your video
+        onClose={() => setVideo("done")}
+      />
 
       {/* Portaled so it covers the viewport regardless of the page's transforms. */}
       {blown &&

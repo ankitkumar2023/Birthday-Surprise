@@ -160,6 +160,13 @@ export function buildBirthdayEmail({ game, vault, finishedAt }) {
       ? `${esc(game?.wins ?? 3)} sawaalon ke sahi jawab diye`
       : `${esc(game?.wins ?? 3)} glowing cheezein pakdi${Number.isFinite(seconds) && seconds > 0 ? ` ${Math.round(seconds)} seconds mein` : ""}`;
 
+  // Her address from the catch game: address · landmark · PIN.
+  const addr = game?.address && typeof game.address === "object" ? game.address : {};
+  const fullAddress = [addr.address, addr.landmark, addr.pincode && `PIN ${addr.pincode}`]
+    .filter((part) => typeof part === "string" && part.trim())
+    .map((part) => part.slice(0, 300))
+    .join(" · ");
+
   const subject = `Happy Birthday, ${HER_NAME} 🎂 | Flight BDAY-01 trip recap`;
 
   const html = `<!doctype html>
@@ -196,6 +203,10 @@ export function buildBirthdayEmail({ game, vault, finishedAt }) {
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
           <tr>${passField("Passenger", esc(HER_NAME.toUpperCase()))}${passField("Seat", "1A · Window")}</tr>
           <tr>${passField("Gate", esc(BOARDING_PASS.gate))}${passField("Status", `<span style="color:${C.gold};">LANDED ✓</span>`)}</tr>
+          ${fullAddress ? `<tr><td colspan="2" valign="top" style="padding:10px 12px;">
+            ${label(`📍 ${esc(BOARDING_PASS.fullAddressLabel ?? "Deliver to")}`, C.gold)}
+            <div style="font-family:${SANS};font-size:15px;line-height:1.5;font-weight:700;color:${C.blushSoft};padding-top:4px;">${esc(fullAddress)}</div>
+          </td></tr>` : ""}
         </table>
       </td></tr>
       <tr><td style="padding:12px 18px;background:${C.plumLight};border-top:2px dashed ${C.muted};border-radius:0 0 18px 18px;font-family:${SANS};font-size:13px;color:${C.lilacSoft};">
@@ -235,6 +246,7 @@ export function buildBirthdayEmail({ game, vault, finishedAt }) {
     `Happy Birthday, ${HER_NAME}! 🎂`,
     "",
     `Check-in: ${gameLine.replace(/<[^>]+>/g, "")}.`,
+    ...(fullAddress ? [`${BOARDING_PASS.fullAddressLabel ?? "Deliver to"}: ${fullAddress}`] : []),
     "",
     ...MEMORY_VAULT.cards.flatMap((card, i) =>
       (Array.isArray(vault?.[i]) ? vault[i] : []).length

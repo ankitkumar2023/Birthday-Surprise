@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Lock, Plane } from "lucide-react";
+import { Lock, MapPin, Plane } from "lucide-react";
 
 // The reward for the mini-game: a boarding pass that prints itself one
 // section per win. A `flap: true` field rolls in like an airport split-flap
@@ -46,6 +46,23 @@ export default function BoardingPass({ pass, unlocked }) {
               <Section key={i} section={section} open={i < unlocked} number={i + 1} />
             ))}
           </div>
+
+          {/* The complete address, once every piece is in */}
+          <AnimatePresence>
+            {complete && pass.fullAddress && (
+              <motion.div
+                className="mt-4 rounded-2xl border border-gold-300/30 bg-gold-300/10 px-4 py-3"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.6 }}
+              >
+                <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-gold-200">
+                  <MapPin className="size-3.5" /> {pass.fullAddressLabel ?? "Deliver to"}
+                </p>
+                <p className="mt-1 break-words text-sm font-semibold leading-relaxed text-blush-100 sm:text-base">{pass.fullAddress}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Perforation */}
@@ -96,7 +113,7 @@ function Section({ section, open, number }) {
   return (
     <div className="relative grid min-h-14 grid-cols-2 gap-3">
       {section.fields.map((field) => (
-        <div key={field.label} className="min-w-0">
+        <div key={field.label} className={`min-w-0 break-words ${field.wide ? "col-span-2" : ""}`}>
           <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-lilac-200/60">{field.label}</p>
           {open ? (
             field.flap ? (

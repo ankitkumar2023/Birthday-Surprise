@@ -16,10 +16,13 @@ const PHASES = {
 };
 
 export default function App() {
-  // Testing shortcut (dev server only): /?card=3 opens the vault at memory 3.
-  const [currentPhase, setCurrentPhase] = useState(() =>
-    import.meta.env.DEV && new URLSearchParams(window.location.search).has("card") ? PHASES.VAULT : PHASES.LANDING,
-  );
+  // Testing shortcuts (dev server only): /?card=3 opens the vault at memory 3,
+  // /?finale jumps to the cake (no email is sent from there).
+  const [currentPhase, setCurrentPhase] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (!import.meta.env.DEV) return PHASES.LANDING;
+    return params.has("finale") ? PHASES.FINALE : params.has("card") ? PHASES.VAULT : PHASES.LANDING;
+  });
   // Everything she gives along the way, for the trip-recap email at the end.
   const [player, setPlayer] = useState({ email: "", game: null, vault: {} });
 

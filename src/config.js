@@ -34,20 +34,62 @@ export const GAME_MODE = "catch";
 // Which floating things appear in the catch game. Any mix of "heart", "star", "gift".
 export const CATCHABLE_KINDS = ["heart", "star", "gift"];
 
+// Shown one line at a time after she enters her email, before the game starts.
+export const GAME_INTRO_LINES = [
+  "Dekh, “I will figure it out” bola tha 😄",
+  "Aur maine apni taraf se poori koshish ki hai...",
+  "Par ab tumhe honest rehna padega — galat type mat karna 🙂",
+];
+export const GAME_INTRO_BUTTON = "Theek hai, shuru karo";
+
+// One question per catch, in order. The game pauses while she answers, and
+// each answer prints onto the boarding pass (see `answer:` fields below).
+//   pattern → a regex the answer must match; minLength → shortest allowed answer
+export const ADDRESS_STEPS = [
+  {
+    key: "address",
+    question: "Pehla stop 🏠 Apna address likho",
+    placeholder: "House no., street, area, city",
+    multiline: true,
+    minLength: 8,
+    error: "Thoda poora address likho na 😄",
+  },
+  {
+    key: "pincode",
+    question: "Ab pincode 📮",
+    placeholder: "6-digit pincode",
+    inputMode: "numeric",
+    maxLength: 6,
+    pattern: "^[1-9][0-9]{5}$",
+    error: "Pincode 6 digits ka hota hai 😄",
+  },
+  {
+    key: "landmark",
+    question: "Aur paas mein koi landmark? 📍",
+    placeholder: "Jaise: near City Mall",
+    minLength: 3,
+    error: "Koi bhi landmark chalega 🙂",
+  },
+];
+export const ADDRESS_SUBMIT = "Aage ✈️";
+
 // The reward for the mini-game: a boarding pass that prints one section per
 // catch / correct answer, so the number of sections is the number of wins
 // needed (3 here). `flap: true` rolls the value in like an airport board
-// (letters only look best there). Today's date is filled in automatically.
+// (letters only look best there). `answer: "address"` fills a field with what
+// she typed for that ADDRESS_STEPS key; `wide: true` spans the full row.
+// Today's date is filled in automatically.
 export const BOARDING_PASS = {
   airline: "Birthday Airways",
   flight: "BDAY-01",
   gate: "Memory Vault",
   stamp: "Approved",
   sections: [
-    { fields: [{ label: "Passenger", value: HER_NAME.toUpperCase(), flap: true }, { label: "Class", value: "VIP · Party of one 👑" }] },
-    { fields: [{ label: "From", value: "Ek aur saal" }, { label: "To", value: "Birthday Mode 🎂" }] },
-    { fields: [{ label: "Seat", value: "1A · Window, obviously" }, { label: "Perks", value: "Unlimited cake · Zero adulting" }] },
+    { fields: [{ label: "Passenger", value: HER_NAME.toUpperCase(), flap: true }, { label: "Class", value: "VIP · Party of one 👑" }, { label: "Address", answer: "address", wide: true }] },
+    { fields: [{ label: "Pincode", answer: "pincode" }, { label: "To", value: "Birthday Mode 🎂" }] },
+    { fields: [{ label: "Landmark", answer: "landmark" }, { label: "Seat", value: "1A · Window, obviously" }] },
   ],
+  fullAddressLabel: "Deliver to", // the complete address, shown once the pass is done
   footnote: "Turbulence: zero. Mood: elevated. Destination: ek shaandaar saal. ✈️",
 };
 
@@ -355,6 +397,16 @@ Always keep cheering the innocent girl inside you,
 that gentle simplicity that makes you, you.
 Aur yaad rakhna — no matter how life moves, everything finds its place in time.
 May all your wishes come true, aur may this year bring you peace, joy, and everything your heart is quietly waiting for.`;
+
+// Your video message: plays after the letter finishes, following a short
+// countdown. Set FINALE_VIDEO = null to skip it.
+export const FINALE_VIDEO = {
+  src: "/assets/birthday-message.mp4",
+  countdown: 4, // seconds
+  countdownLine: "Ek aakhri cheez… 🎬",
+  tapToPlay: "Play karo ▶", // shown only if the phone blocks autoplay
+  replayLabel: "Video phir se dekho",
+};
 
 // Shown under the letter once the trip-recap email is on its way.
 export const EMAIL_SENT_LINE = "Apna inbox check karo — game ka recap aur tumhara coupon wahan pahunch gaya hai.";

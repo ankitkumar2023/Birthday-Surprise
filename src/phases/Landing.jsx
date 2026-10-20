@@ -3,20 +3,32 @@ import { Gift, Sparkles } from "lucide-react";
 import PhaseTransition from "../components/PhaseTransition";
 import GlowButton from "../components/GlowButton";
 import { useState } from "react";
-import { EMAIL_INVALID, EMAIL_PLACEHOLDER, EMAIL_PROMPT, LANDING_LINE_1, LANDING_LINE_2 } from "../config";
+import {
+  EMAIL_INVALID,
+  EMAIL_PLACEHOLDER,
+  EMAIL_PROMPT,
+  GAME_INTRO_BUTTON,
+  GAME_INTRO_LINES,
+  LANDING_LINE_1,
+  LANDING_LINE_2,
+} from "../config";
 import { isEmail } from "../email";
 
 // Phase 1 — a dark, softly glowing teaser. Text arrives line by line,
-// then she enters her email and the Start button begins the game.
+// then she enters her email, reads a few lines from you (GAME_INTRO_LINES),
+// and the button under them begins the game.
 export default function Landing({ initialEmail = "", onStart }) {
   const [email, setEmail] = useState(initialEmail);
   const [error, setError] = useState(false);
+  const [intro, setIntro] = useState(false); // email accepted: showing the intro lines
 
   const submit = (e) => {
     e?.preventDefault();
     if (!isEmail(email)) return setError(true);
-    onStart(email.trim());
+    setIntro(true);
   };
+
+  const INTRO_GAP = 1.6; // seconds between intro lines
 
   return (
     <PhaseTransition className="flex flex-col items-center justify-center gap-10 px-6 text-center">
@@ -37,63 +49,93 @@ export default function Landing({ initialEmail = "", onStart }) {
         </motion.div>
       </motion.div>
 
-      <div className="space-y-4">
-        {/* Outer element fades in once; inner element pulses forever. */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 1.2 }}>
-          <motion.h1
-            className="font-script text-5xl text-blush-100 text-glow sm:text-7xl"
-            animate={{ opacity: [0.65, 1, 0.65] }}
-            transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+      {intro ? (
+        <Intro gap={INTRO_GAP} onStart={() => onStart(email.trim())} />
+      ) : (
+        <>
+          <div className="space-y-4">
+            {/* Outer element fades in once; inner element pulses forever. */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 1.2 }}>
+              <motion.h1
+                className="font-script text-5xl text-blush-100 text-glow sm:text-7xl"
+                animate={{ opacity: [0.65, 1, 0.65] }}
+                transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                {LANDING_LINE_1}
+              </motion.h1>
+            </motion.div>
+
+            <motion.p
+              className="text-lg italic tracking-wide text-lilac-200/80 sm:text-xl"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 2.2, duration: 1.2 }}
+            >
+              {LANDING_LINE_2}
+            </motion.p>
+          </div>
+
+          <motion.form
+            className="flex w-full max-w-sm flex-col items-center gap-3"
+            onSubmit={submit}
+            noValidate
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 3, duration: 0.8 }}
           >
-            {LANDING_LINE_1}
-          </motion.h1>
-        </motion.div>
-
-        <motion.p
-          className="text-lg italic tracking-wide text-lilac-200/80 sm:text-xl"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.2, duration: 1.2 }}
-        >
-          {LANDING_LINE_2}
-        </motion.p>
-      </div>
-
-      <motion.form
-        className="flex w-full max-w-sm flex-col items-center gap-3"
-        onSubmit={submit}
-        noValidate
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 3, duration: 0.8 }}
-      >
-        <label htmlFor="her-email" className="text-sm text-lilac-200/85 sm:text-base">
-          {EMAIL_PROMPT}
-        </label>
-        <input
-          id="her-email"
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            setError(false);
-          }}
-          placeholder={EMAIL_PLACEHOLDER}
-          aria-invalid={error}
-          className={`w-full rounded-full border bg-white/10 px-6 py-3.5 text-center text-base text-blush-100 placeholder:text-lilac-200/40 outline-none backdrop-blur transition focus:bg-white/15 focus:shadow-[0_0_24px_rgba(255,133,173,0.35)] ${
-            error ? "border-rose-300/80" : "border-white/20 focus:border-blush-300/70"
-          }`}
-        />
-        <p className="h-5 text-sm text-rose-200" role="alert">
-          {error && EMAIL_INVALID}
-        </p>
-        {/* GlowButton is type="button", so the form's Enter key is handled by onSubmit. */}
-        <GlowButton onClick={submit} delay={3.2}>
-          Start <Sparkles className="size-5" />
-        </GlowButton>
-      </motion.form>
+            <label htmlFor="her-email" className="text-sm text-lilac-200/85 sm:text-base">
+              {EMAIL_PROMPT}
+            </label>
+            <input
+              id="her-email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError(false);
+              }}
+              placeholder={EMAIL_PLACEHOLDER}
+              aria-invalid={error}
+              className={`w-full rounded-full border bg-white/10 px-6 py-3.5 text-center text-base text-blush-100 placeholder:text-lilac-200/40 outline-none backdrop-blur transition focus:bg-white/15 focus:shadow-[0_0_24px_rgba(255,133,173,0.35)] ${
+                error ? "border-rose-300/80" : "border-white/20 focus:border-blush-300/70"
+              }`}
+            />
+            <p className="h-5 text-sm text-rose-200" role="alert">
+              {error && EMAIL_INVALID}
+            </p>
+            {/* GlowButton is type="button", so the form's Enter key is handled by onSubmit. */}
+            <GlowButton onClick={submit} delay={3.2}>
+              Start <Sparkles className="size-5" />
+            </GlowButton>
+          </motion.form>
+        </>
+      )}
     </PhaseTransition>
+  );
+}
+
+// Your lines arrive one at a time, then the button that starts the game.
+function Intro({ gap, onStart }) {
+  return (
+    <div className="flex max-w-xl flex-col items-center gap-5">
+      {GAME_INTRO_LINES.map((line, i) => (
+        <motion.p
+          key={line}
+          className={i === 0 ? "font-script text-4xl text-blush-100 text-glow sm:text-5xl" : "text-lg text-lilac-200/90 sm:text-xl"}
+          initial={{ opacity: 0, y: 14, filter: "blur(6px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          transition={{ delay: 0.3 + i * gap, duration: 0.9 }}
+        >
+          {line}
+        </motion.p>
+      ))}
+      <div className="mt-4">
+        <GlowButton onClick={onStart} delay={0.3 + GAME_INTRO_LINES.length * gap}>
+          {GAME_INTRO_BUTTON} <Sparkles className="size-5" />
+        </GlowButton>
+      </div>
+    </div>
   );
 }
