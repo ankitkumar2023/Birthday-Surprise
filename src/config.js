@@ -401,7 +401,7 @@ May all your wishes come true, aur may this year bring you peace, joy, and every
 // Your video message: plays after the letter finishes, following a short
 // countdown. Set FINALE_VIDEO = null to skip it.
 export const FINALE_VIDEO = {
-  src: "/assets/birthday-message.mp4",
+  src: "/assets/birthday-wish-2.mp4",
   countdown: 4, // seconds
   countdownLine: "Ek aakhri cheez… 🎬",
   tapToPlay: "Play karo ▶", // shown only if the phone blocks autoplay
