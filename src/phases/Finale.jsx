@@ -24,6 +24,7 @@ export default function Finale({ player, onRestart }) {
   const [muted, setMuted] = useState(false);
   const [messageDone, setMessageDone] = useState(false);
   const [mail, setMail] = useState("idle"); // idle → sending → sent | failed
+  const [sentTo, setSentTo] = useState(null); // the address it really went to (the server can override hers)
   const [video, setVideo] = useState(FINALE_VIDEO ? "waiting" : "done"); // waiting → open → done
   const afterVideo = messageDone && video === "done";
   const audioRef = useRef(null);
@@ -33,7 +34,10 @@ export default function Finale({ player, onRestart }) {
     if (!player?.email) return;
     setMail("sending");
     sendBirthdayEmail(player)
-      .then(() => setMail("sent"))
+      .then((to) => {
+        setSentTo(to);
+        setMail("sent");
+      })
       .catch(() => setMail("failed"));
   };
 
@@ -187,7 +191,7 @@ export default function Finale({ player, onRestart }) {
               <p className="mt-2 text-blush-100/90">
                 {mail === "sent" ? EMAIL_SENT_LINE : "Tumhare inbox ki taraf ja raha hai, bas ek second…"}
               </p>
-              <p className="mt-1 text-sm text-lilac-200/70">{player.email}</p>
+              {mail === "sent" && <p className="mt-1 text-sm text-lilac-200/70">{sentTo ?? player.email}</p>}
             </>
           )}
         </motion.div>

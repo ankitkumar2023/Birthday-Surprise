@@ -7,7 +7,8 @@ import { buildBirthdayEmail } from "./emailTemplate.js";
 // password never reaches the browser.
 //
 // Needs in .env (or the host's environment variables):
-//   GMAIL_USER, GMAIL_APP_PASSWORD, and optionally EMAIL_COPY_TO (BCC).
+//   GMAIL_USER, GMAIL_APP_PASSWORD, and optionally EMAIL_COPY_TO (BCC) and
+//   EMAIL_TO (always send here, whatever address she typed).
 
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/;
 
@@ -15,7 +16,7 @@ const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/;
 // a few sends per recipient, and a small ceiling overall.
 const sent = new Map(); // recipient → timestamps
 const WINDOW_MS = 60 * 60 * 1000;
-const PER_RECIPIENT = 3;
+const PER_RECIPIENT = 6; // with EMAIL_TO set, every play counts toward this one address
 const GLOBAL_LIMIT = 20;
 
 function allowed(to) {
@@ -28,6 +29,12 @@ function allowed(to) {
   return true;
 }
 
+// "khushisharmaa00@gmail.com" → "kh••••••••••00@gmail.com", for showing on the page.
+const mask = (email) => {
+  const [name, domain] = email.split("@");
+  return name.length <= 4 ? `${name[0]}•••@${domain}` : `${name.slice(0, 2)}${"•".repeat(name.length - 4)}${name.slice(-2)}@${domain}`;
+};
+
 let transport;
 const getTransport = (env) =>
   (transport ??= nodemailer.createTransport({
@@ -37,8 +44,11 @@ const getTransport = (env) =>
 
 // body = { email, game, vault, finishedAt } → { status, json }
 export async function handleBirthdayEmail(body, env = process.env) {
-  const to = String(body?.email ?? "").trim().toLowerCase();
-  if (!EMAIL_RE.test(to)) return { status: 400, json: { ok: false, error: "invalid-email" } };
+  const typed = String(body?.email ?? "").trim().toLowerCase();
+  if (!EMAIL_RE.test(typed)) return { status: 400, json: { ok: false, error: "invalid-email" } };
+  // EMAIL_TO, when set, wins over whatever was typed on the landing page.
+  const to = String(env.EMAIL_TO ?? "").trim().toLowerCase() || typed;
+  if (!EMAIL_RE.test(to)) return { status: 500, json: { ok: false, error: "bad-email-to" } };
   if (!env.GMAIL_USER || !env.GMAIL_APP_PASSWORD) return { status: 500, json: { ok: false, error: "email-not-configured" } };
   if (JSON.stringify(body).length > 20_000) return { status: 413, json: { ok: false, error: "too-large" } };
   if (!allowed(to)) return { status: 429, json: { ok: false, error: "rate-limited" } };
@@ -53,7 +63,7 @@ export async function handleBirthdayEmail(body, env = process.env) {
       html,
       text,
     });
-    return { status: 200, json: { ok: true } };
+    return { status: 200, json: { ok: true, to: mask(to) } };
   } catch (err) {
     console.error("[birthday-email] send failed:", err.message);
     return { status: 502, json: { ok: false, error: "send-failed" } };

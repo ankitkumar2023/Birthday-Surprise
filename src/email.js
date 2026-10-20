@@ -9,6 +9,7 @@ export async function sendBirthdayEmail(player) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+  return data.to; // where it actually went (partly hidden), e.g. "kh••••00@gmail.com"
 }
 
 export const isEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.trim());
